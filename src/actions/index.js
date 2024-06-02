@@ -96,3 +96,43 @@ export async function userSignInAction(signInData) {
     };
   }
 }
+
+export async function getUserAuthAction() {
+  await connectDB();
+
+  try {
+    const cookiesManager = cookies();
+    const token = cookiesManager.get('token')?.value || '';
+
+    if (token === '') {
+      return {
+        success: false,
+        message: 'Token is invalid!',
+      };
+    }
+
+    const decodedToken = jwt.verify(token, process.env.NEXT_PUBLIC_JWT_SECRET_KEY);
+
+    const getUserInfo = await User.findOne({ id: decodedToken._id });
+
+    getUserInfo.password = undefined;
+
+    if (getUserInfo) {
+      return {
+        success: true,
+        data: JSON.parse(JSON.stringify(getUserInfo)),
+      };
+    } else {
+      return {
+        success: false,
+        message: 'Something went wrong!',
+      };
+    }
+  } catch (error) {
+    console.log(error);
+    return {
+      success: false,
+      message: 'Something went wrong!',
+    };
+  }
+}
