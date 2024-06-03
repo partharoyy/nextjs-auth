@@ -1,6 +1,6 @@
 'use client';
 
-import CommonElement from '@/components/ui/common-element/page';
+import CommonElement from '@/components/common-element/page';
 import { useState } from 'react';
 import { initialSigninData, signinFormController } from '../utils';
 import { Button } from '@/components/ui/button';

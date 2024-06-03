@@ -21,7 +21,7 @@ export async function userSignUpAction(signUpData) {
       };
     }
 
-    const hashedPassword = bcryptjs.hashSync(password, 10);
+    const hashedPassword = await bcryptjs.hash(password, 10);
 
     const addedUser = await User.create({
       userName,
@@ -63,7 +63,7 @@ export async function userSignInAction(signInData) {
       };
     }
 
-    const checkPassword = bcryptjs.compareSync(password, checkUser.password);
+    const checkPassword = await bcryptjs.compare(password, checkUser.password);
 
     if (!checkPassword) {
       return {
@@ -113,9 +113,14 @@ export async function getUserAuthAction() {
 
     const decodedToken = jwt.verify(token, process.env.NEXT_PUBLIC_JWT_SECRET_KEY);
 
-    const getUserInfo = await User.findOne({ id: decodedToken._id });
+    if (!decodedToken) {
+      return {
+        success: false,
+        message: 'Token is invalid!',
+      };
+    }
 
-    getUserInfo.password = undefined;
+    const getUserInfo = await User.findOne({ _id: decodedToken.id }).select('-password');
 
     if (getUserInfo) {
       return {
@@ -135,4 +140,10 @@ export async function getUserAuthAction() {
       message: 'Something went wrong!',
     };
   }
+}
+
+export async function logoutAction() {
+  const cookiesManager = cookies();
+
+  cookiesManager.set('token', '');
 }
